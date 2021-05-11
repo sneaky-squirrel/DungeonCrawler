@@ -1,0 +1,18 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "4.25",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "ProjectAnemone",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+	        {
+			"Name": "HexagonGridModule",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+        	}
+	]
+}
