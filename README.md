@@ -1,11 +1,11 @@
-# ProjectAnemone
+# Project Anemone
 
 A personal first-person dungeon crawler videogame project.
 
-Developed with Unreal Engine 4
+Developed with **Unreal Engine 4.**
 
-##Notable Features
+## Notable Features
 
-Hexagonal navigation.
+* Hexagonal navigation.
 
-Three dimensional levels.
+* Three dimensional levels.
