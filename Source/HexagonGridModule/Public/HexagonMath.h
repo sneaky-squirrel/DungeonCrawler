@@ -21,15 +21,15 @@ struct HEXAGONGRIDMODULE_API FAxialCoordinates
 
 	// Column
 	UPROPERTY( EditInstanceOnly, BlueprintReadOnly )
-	int32 Q;
+	int32 Q = 0;
 
 	// Row
 	UPROPERTY( EditInstanceOnly, BlueprintReadOnly )
-	int32 R;
+	int32 R = 0;
 
 	// Height
 	UPROPERTY( EditInstanceOnly, BlueprintReadOnly )
-	int32 H;
+	int32 H = 0;
 
 	FAxialCoordinates();
 	FAxialCoordinates( const FCubeCoordinates& InCoordinates );

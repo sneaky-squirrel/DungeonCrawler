@@ -1,48 +1,79 @@
 #include "AnemoneGameData.h"
+#include "OutcomeTracker.h"
 #include "AnemoneGameStateSubsystem.h"
 
-TArray< EScore > EntityScores =
-	{
-		EScore::Constitution, EScore::Agility, EScore::Finesse, EScore::Mind,
-		EScore::Hitpoints, EScore::Stamina, EScore::Strength, EScore::Block,
-		EScore::Speed, EScore::Evasion, EScore::Skulking,
-		EScore::Discipline, EScore::Accuracy, EScore::Parry, EScore::Lock,
-		EScore::Mana, EScore::Resolve, EScore::Foresight, EScore::Perception
-	};
-
-TArray< EModule > EntityCombatModules = 
-	{
-		EModule::StartAction,
-		EModule::SendQueryOutcome, EModule::GetQueryOutcome,
-		EModule::GiveScoreDelta, EModule::GainScoreDelta,
-		EModule::Parry, EModule::Evasion, EModule::Block,
-		EModule::GiveStatus, EModule::GainStatus,
-		EModule::RemoveStatus, EModule::LoseStatus
-	};
+DEFINE_LOG_CATEGORY( LogEncounter );
 
 /*
-TArray< FOutcomeTableRow > OutcomeRateTableRows =
+*	Score Lists
+*/
+
+const ScoreList ScoresAll =
 	{
-		{ EOutcomeTableRow::Fodder, 8 },
-		{ EOutcomeTableRow::Ahead, 4 },
-		{ EOutcomeTableRow::Advantage, 2 },
-		{ EOutcomeTableRow::Even, 0 },
-		{ EOutcomeTableRow::Disadvantage, -4 },
-		{ EOutcomeTableRow::Behind, -8 },
-		{ EOutcomeTableRow::Despair, -12 }
+		EAnemoneScore::Constitution, EAnemoneScore::Agility, EAnemoneScore::Finesse, EAnemoneScore::Mind,
+		EAnemoneScore::Hitpoints, EAnemoneScore::Stamina, EAnemoneScore::Fortitude, EAnemoneScore::Strength,
+		EAnemoneScore::Speed, EAnemoneScore::Evasion, EAnemoneScore::Skulking, EAnemoneScore::Block,
+		EAnemoneScore::Prowess, EAnemoneScore::Accuracy, EAnemoneScore::Technique, EAnemoneScore::Lock,
+		EAnemoneScore::Mana, EAnemoneScore::Resolve, EAnemoneScore::Cunning, EAnemoneScore::Perception
 	};
 
-TMap< EDamageType, FString > DamageTypeMap =
+const ScoreList ScoresPoolEncounter =
 	{
-		{ EDamageType::Physical, FString( TEXT( "" ) ) },
-		{ EDamageType::Magic, FString( TEXT( " magic" ) ) },
-		{ EDamageType::Poison, FString( TEXT( " poison" ) ) },
-		{ EDamageType::Fire, FString( TEXT( " fire" ) ) },
-		{ EDamageType::Water, FString( TEXT( " water" ) ) },
-		{ EDamageType::Earth, FString( TEXT( " earth" ) ) },
-		{ EDamageType::Wind, FString( TEXT( " wind" ) ) },
+		EAnemoneScore::Hitpoints, EAnemoneScore::Stamina, EAnemoneScore::Fortitude, EAnemoneScore::Mana
 	};
+
+const ScoreList ScoresComparison =
+	{
+		EAnemoneScore::Strength,
+		EAnemoneScore::Speed, EAnemoneScore::Evasion, EAnemoneScore::Skulking, EAnemoneScore::Block,
+		EAnemoneScore::Prowess, EAnemoneScore::Accuracy, EAnemoneScore::Technique, EAnemoneScore::Lock,
+		EAnemoneScore::Resolve, EAnemoneScore::Cunning, EAnemoneScore::Perception
+	};
+
+const ScoreList ScoresOffense =
+	{
+		EAnemoneScore::Strength, EAnemoneScore::Speed, EAnemoneScore::Accuracy
+	};
+
+const ScoreList ScoresDefense =
+	{
+		EAnemoneScore::Evasion, EAnemoneScore::Block, EAnemoneScore::Technique
+	};
+
+const ScorePair ScorePairTechnique = { EAnemoneScore::Speed, EAnemoneScore::Technique };
+const ScorePair ScorePairEvasion = { EAnemoneScore::Accuracy, EAnemoneScore::Evasion };
+const ScorePair ScorePairBlock = { EAnemoneScore::Strength, EAnemoneScore::Block };
+
+/*
+*	Outcome Lists
 */
+
+const OutcomeList OutcomesTechnique =
+	{
+		EOutcome::Counter, EOutcome::Parry, EOutcome::Retaliate
+	};
+
+const OutcomeList OutcomesEvasion =
+	{
+		EOutcome::Disappear, EOutcome::Evade, EOutcome::Graze
+	};
+
+const OutcomeList OutcomesBlock =
+	{
+		EOutcome::Deflect, EOutcome::Absorb, EOutcome::PushedBack
+	};
+
+const OutcomeList OutcomesHit =
+	{
+		EOutcome::Hit
+	};
+
+const TMap< EScoreSet, ScoreCheck > ScoreCheckMap =
+	{
+		{ EScoreSet::Technique, ScoreCheck( ScorePairTechnique, OutcomesHit, OutcomesTechnique ) },
+		{ EScoreSet::Evasion, ScoreCheck( ScorePairEvasion, OutcomesHit, OutcomesEvasion ) },
+		{ EScoreSet::Block, ScoreCheck( ScorePairBlock, OutcomesHit, OutcomesBlock ) }
+	};
 
 FAnemoneScore::FAnemoneScore()
 :FAnemoneScore( 100 )
@@ -50,19 +81,19 @@ FAnemoneScore::FAnemoneScore()
 }
 
 FAnemoneScore::FAnemoneScore( int32 Score )
-:Base( Score ), Modifier( 0 )
+:Base( Score ), Delta( 0 )
 {
 }
 
-int32 FAnemoneScore::Total() const
+int32 FAnemoneScore::GetTotal() const
 {
-	return Base + Modifier;
+	return Base + Delta;
 }
 
 FArchive& operator<<( FArchive& Ar, FAnemoneScore& Score )
 {
 	Ar << Score.Base;
-	Ar << Score.Modifier;
+	Ar << Score.Delta;
 	return Ar;
 }
 
@@ -94,6 +125,60 @@ FArchive& operator<<( FArchive& Ar, TMap< FName, FAnemoneScore >& ScoreSheet )
 	return Ar;
 }
 
+ScorePair::FAnemoneScorePair( EAnemoneScore InInstigator, EAnemoneScore InDefender )
+	:Instigator( InInstigator ), Defender( InDefender )
+{
+}
+
+ScorePair::FAnemoneScorePair( const FAnemoneScorePair& InSet )
+	:Instigator( InSet.Instigator ), Defender( InSet.Defender )
+{
+}
+
+ScoreCheck::FAnemoneScoreCheck( const ScorePair& InScoreSet, const TArray< EOutcome >& InInstigator, const TArray< EOutcome >& InDefender )
+	:ScoreSet( InScoreSet ), InstigatorOutcomeList( InInstigator ), DefenderOutcomeList( InDefender )
+{
+}
+
+EventData::FAnemoneEventData()
+{
+}
+
+EventData::FAnemoneEventData( const FName InTarget, const NameList& InInstigator, const NameList& InTargetList, const EOutcome InOutcome, const int32 InIndentation )
+:Target( InTarget ), InstigatorList( InInstigator ), TargetList( InTargetList ), Outcome( InOutcome ), Indentation( InIndentation )
+{
+}
+
+ActionInstance::FAnemoneActionInstance()
+{
+}
+
+ActionInstance::FAnemoneActionInstance( UAnemoneAction* InAction, int32 InIndentation, const TArray< FName >& InInstigator, const TArray< FName >& InTarget )
+:Action( InAction ), Indentation( InIndentation ), InstigatorList( InInstigator ), TargetList( InTarget )
+{
+}
+
+void ActionInstanceQueue::PushAction( UAnemoneAction* InItem, int32 InIndentation, const TArray< FName >& InInstigator, const TArray< FName >& InTarget )
+{
+	Queue.Enqueue( ActionInstance( InItem, InIndentation, InInstigator, InTarget ) );
+}
+
+bool UAnemoneActionInstanceQueue::PopAction( ActionInstance& Entry )
+{
+	return Queue.Dequeue( Entry );
+}
+
+void LogQueue::Push( const FText& InLogText )
+{
+	Queue.Enqueue( InLogText );
+}
+
+bool LogQueue::Pop( FText& OutLogText )
+{
+	return Queue.Dequeue( OutLogText );
+}
+
+/*
 FArchive& operator<<( FArchive& Ar, FAnemoneMessageModule& Module )
 {
 	if( Ar.ArIsSaveGame )
@@ -135,3 +220,5 @@ FArchive& operator<<( FArchive& Ar, TMap< FName, FAnemoneMessageModule >& Module
 	}
 	return Ar;
 }
+
+*/

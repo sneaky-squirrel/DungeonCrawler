@@ -1,6 +1,6 @@
 #include "OutcomeModule.h"
 
-IMPLEMENT_MODULE(FHexagonGridModule, HexagonGridModule);
+IMPLEMENT_MODULE(FOutcomeModule, OutcomeModule);
 
 void FOutcomeModule::StartupModule()
 {

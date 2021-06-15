@@ -4,3 +4,9 @@
 
 #include "CoreMinimal.h"
 
+class FProjectAnemone : public FDefaultGameModuleImpl
+{
+public:
+	virtual void StartupModule() override;
+	virtual void ShutdownModule() override;
+};

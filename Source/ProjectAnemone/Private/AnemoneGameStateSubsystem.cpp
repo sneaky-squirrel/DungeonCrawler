@@ -3,31 +3,64 @@
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
 #include "PlatformFeatures.h"
 
-//#include "AnemoneCharacter.h"
+#include "Kismet/GameplayStatics.h"
+
+using GameStateSubsystem = UAnemoneGameStateSubsystem;
 
 TMap< FName, UObject* > ObjectMap;
-UGameInstance* CurrentGameInstance;
 
-void UAnemoneGameStateSubsystem::Initialize( FSubsystemCollectionBase& Collection )
+//GameStateSubsystem* GameStateSubsystem::GameState = nullptr;
+GameStateSubsystem* GameState = nullptr;
+
+void GameStateSubsystem::Initialize( FSubsystemCollectionBase& Collection )
 {
-	CurrentGameInstance = GetGameInstance();
-	//CharacterList = NewObject<UAnemoneObjectList>( this );
+	GameState = this;
 }
 
-void UAnemoneGameStateSubsystem::Deinitialize()
+void GameStateSubsystem::Deinitialize()
 {
 }
 
-/*
-UAnemoneCharacter* UAnemoneGameStateSubsystem::CreateNewCharacter()
+bool GameStateSubsystem::ContainsEntity( const FName InIdentifier )
 {
-	UAnemoneCharacter* NewCharacter = NewObject<UAnemoneCharacter>( this, UAnemoneCharacter::StaticClass() );
-	CurrentGameState->AllCharacters.Emplace( NewCharacter );
-	return NewCharacter;
+	return EntityMap.Contains( InIdentifier );
 }
-*/
 
-bool UAnemoneGameStateSubsystem::SaveGameStateToSlot( const FString& SlotName, const int32 UserIndex )
+FName GameStateSubsystem::AddEntity( const FName InIdentifier, UObject* InEntity )
+{
+	FName CurrentName = NAME_None;
+	if( !EntityMap.Contains( InIdentifier ) )
+	{
+		EntityMap.Emplace( InIdentifier, InEntity );
+		return InIdentifier;
+	}
+	FString BaseName = InIdentifier.ToString();
+	for( int i = 0; i < 26; ++i )
+	{
+		CurrentName = FName( FString::Printf( TEXT( "%s_%c" ), *BaseName, 'A' + i ) );
+		if( !EntityMap.Contains( CurrentName ) )
+		{
+			EntityMap.Emplace( CurrentName, InEntity );
+			return CurrentName;
+		}
+	}
+	UE_LOG( LogTemp, Error, TEXT( "GameStateSubsystem::AddEntity()" ) );
+	return NAME_None;
+}
+
+void GameStateSubsystem::RemoveEntity( const FName InIdentifier )
+{
+	EntityMap.Remove( InIdentifier );
+}
+
+UObject* GameStateSubsystem::GetEntity( const FName InIdentifier )
+{
+	check( this );
+	UObject* Entity = EntityMap.FindRef( InIdentifier );
+	return ( Entity ) ? Entity : nullptr;
+}
+
+bool GameStateSubsystem::SaveGameStateToSlot( const FString& SlotName, const int32 UserIndex )
 {
 	TArray<uint8> StoredData;
 	FMemoryWriter Writer( StoredData );
@@ -41,12 +74,12 @@ bool UAnemoneGameStateSubsystem::SaveGameStateToSlot( const FString& SlotName, c
 		UAnemoneCharacter* CurrentCharacter = NewObject<UAnemoneCharacter>( this );
 		CharacterList.Emplace( CurrentCharacter );
 	}
-	CharacterList[ 0 ]->ScoreSheet[ EScore::Constitution ].Base = 300;
+	CharacterList[ 0 ]->ScoreSheet[ EAnemoneScore::Constitution ].Base = 300;
 
 	for( int32 i = 0; i < CharacterList.Num(); ++i )
 	{
 		UE_LOG( LogTemp, Display, TEXT("Base Constitution: %d"),
-		CharacterList[ i ]->ScoreSheet[ EScore::Constitution ].Base );
+		CharacterList[ i ]->ScoreSheet[ EAnemoneScore::Constitution ].Base );
 	}
 	SerializeArray( Ar, CharacterList );
 */
@@ -58,7 +91,7 @@ bool UAnemoneGameStateSubsystem::SaveGameStateToSlot( const FString& SlotName, c
 	return true;
 }
 
-bool UAnemoneGameStateSubsystem::LoadGameStateFromSlot( const FString& SlotName, const int32 UserIndex )
+bool GameStateSubsystem::LoadGameStateFromSlot( const FString& SlotName, const int32 UserIndex )
 {
 	TArray<uint8> LoadedData;
 	FMemoryReader Reader( LoadedData );
@@ -73,7 +106,7 @@ bool UAnemoneGameStateSubsystem::LoadGameStateFromSlot( const FString& SlotName,
 	for( int32 i = 0; i < CharacterList.Num(); ++i )
 	{
 		UE_LOG( LogTemp, Display, TEXT("Base Constitution: %d"),
-		CharacterList[ i ]->ScoreSheet[ EScore::Constitution ].Base );
+		CharacterList[ i ]->ScoreSheet[ EAnemoneScore::Constitution ].Base );
 	}
 */
 
@@ -147,7 +180,7 @@ void SerializeArray( FArchive& Ar, TArray<UObject*>& ObjectList )
 	}
 }
 
-bool UAnemoneGameStateSubsystem::SaveDataToDisk( TArray<uint8>& StoredData, const FString& SlotName, const int32 UserIndex )
+bool GameStateSubsystem::SaveDataToDisk( TArray<uint8>& StoredData, const FString& SlotName, const int32 UserIndex )
 {
 	//ISaveGameSystem* SaveSystem = GetSaveGameSystem();
 	FString SaveFileName = FString( SlotName );
@@ -165,7 +198,7 @@ bool UAnemoneGameStateSubsystem::SaveDataToDisk( TArray<uint8>& StoredData, cons
 	return true;
 }
 
-bool UAnemoneGameStateSubsystem::LoadDataFromDisk( TArray<uint8>& StoredData, const FString& SlotName, const int32 UserIndex )
+bool GameStateSubsystem::LoadDataFromDisk( TArray<uint8>& StoredData, const FString& SlotName, const int32 UserIndex )
 {
 	FString SaveFileName = FString( SlotName );
 	SaveFileName.AppendInt( UserIndex );
@@ -181,7 +214,7 @@ bool UAnemoneGameStateSubsystem::LoadDataFromDisk( TArray<uint8>& StoredData, co
 	return true;
 }
 
-void UAnemoneGameStateSubsystem::RemoteLog( FString String )
+void GameStateSubsystem::RemoteLog( FString String )
 {
 	UE_LOG( LogTemp, Warning, TEXT("%s"), *String );
 }

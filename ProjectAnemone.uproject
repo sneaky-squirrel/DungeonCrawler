@@ -7,12 +7,17 @@
 		{
 			"Name": "ProjectAnemone",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"CoreUObject",
+				"Engine",
+				"UMG"
+			]
 		},
-	        {
+		{
 			"Name": "HexagonGridModule",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
-        	}
+		}
 	]
 }
