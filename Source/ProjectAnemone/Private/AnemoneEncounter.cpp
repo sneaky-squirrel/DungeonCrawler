@@ -16,7 +16,7 @@ PendingLogText( CreateDefaultSubobject< LogQueue >( TEXT("PendingLogText") ) )
 
 Encounter* Encounter::CreateEncounter( TSubclassOf< Encounter > InEncounterType )
 {
-	Encounter* Item = NewObject< Encounter >( GameState, InEncounterType );
+	Encounter* Item = NewObject< Encounter >( GlobalState, InEncounterType );
 	Item->PendingActions = NewObject< ActionInstanceQueue >();
 	Item->PendingLogText = NewObject< LogQueue >();
 	return Item;

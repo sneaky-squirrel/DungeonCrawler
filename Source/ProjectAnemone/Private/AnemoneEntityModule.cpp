@@ -13,7 +13,7 @@ bool Module::HandleEvent_Implementation( UAnemoneEvent* InEvent )
 
 Module* Module::CreateCopy( const FName InHost, const FName InInstigator, const FName InAction )
 {
-	UAnemoneEntityModule* NewCopy = NewObject< UAnemoneEntityModule >( GameState, GetClass() );
+	UAnemoneEntityModule* NewCopy = NewObject< UAnemoneEntityModule >( GlobalState, GetClass() );
 	NewCopy->HostID = InHost;
 	NewCopy->InstigatorID = InInstigator;
 	NewCopy->ActionID = InAction;

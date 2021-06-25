@@ -33,6 +33,9 @@ struct HEXAGONGRIDMODULE_API FAxialCoordinates
 
 	FAxialCoordinates();
 	FAxialCoordinates( const FCubeCoordinates& InCoordinates );
+
+	FAxialCoordinates& operator=( const FAxialCoordinates& InCoordinates );
+	FAxialCoordinates& operator=( const FCubeCoordinates& InCoordinates );
 };
 
 USTRUCT( BlueprintType )
@@ -61,7 +64,24 @@ struct HEXAGONGRIDMODULE_API FCubeCoordinates
 extern TArray< FCubeCoordinates > HEXAGONGRIDMODULE_API CubeDirections;
 extern TMap< EDirectionHexagonal, float > HEXAGONGRIDMODULE_API FacingAngles;
 
-FCubeCoordinates HEXAGONGRIDMODULE_API Cube_Add( const FCubeCoordinates& InA, const FCubeCoordinates& InB );
-FCubeCoordinates HEXAGONGRIDMODULE_API Cube_Scale( const FCubeCoordinates& CubeVector, int32 InScale );
-FCubeCoordinates HEXAGONGRIDMODULE_API Cube_Direction( int32 InDirection );
-FCubeCoordinates HEXAGONGRIDMODULE_API Cube_Neighbor( const FCubeCoordinates& InCubeCoordinate, int32 InDirection );
+FCubeCoordinates HEXAGONGRIDMODULE_API Cube_Direction( const int32 InDirection );
+FCubeCoordinates HEXAGONGRIDMODULE_API Cube_Neighbor( const FCubeCoordinates& InCubeCoordinate, const int32 InDirection );
+
+FCubeCoordinates HEXAGONGRIDMODULE_API operator+( const FCubeCoordinates& InA, const FCubeCoordinates& InB );
+FCubeCoordinates HEXAGONGRIDMODULE_API operator*( const FCubeCoordinates& CubeVector, const int32 InScale );
+
+/*	Fills out Vector2D parameter with the position of Hexagon-Grid Axial Coordinates.
+*	OutVector = Vector that will be written to.
+*	InCoordinates = Axial Coordinates of the Hexagonal Cell.
+*	InSize = Size of the Hexagon.
+*/
+void HEXAGONGRIDMODULE_API ToVector( FVector2D& OutVector, const FAxialCoordinates& InCoordinates, const float InSize );
+
+/*	Fills out Vector2D parameter with the position of Hexagon-Grid Cube Coordinates.
+*	OutVector = Vector that will be written to.
+*	InCoordinates = Cube Coordinates of the Hexagonal Cell.
+*	InSize = Size of the Hexagon.
+*/
+void HEXAGONGRIDMODULE_API ToVector( FVector2D& OutVector, const FCubeCoordinates& InCoordinates, const float InSize );
+
+FVector2D HEXAGONGRIDMODULE_API ToVector( const FCubeCoordinates& InCoordinates, const float InSize );

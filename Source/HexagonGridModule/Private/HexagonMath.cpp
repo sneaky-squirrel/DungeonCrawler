@@ -25,6 +25,22 @@ FAxialCoordinates::FAxialCoordinates(const FCubeCoordinates& InCoordinates)
 {
 }
 
+FAxialCoordinates& FAxialCoordinates::operator=( const FAxialCoordinates& InCoordinates )
+{
+	Q = InCoordinates.Q;
+	R = InCoordinates.R;
+	H = InCoordinates.H;
+	return *this;
+}
+
+FAxialCoordinates& FAxialCoordinates::operator=( const FCubeCoordinates& InCoordinates )
+{
+	Q = InCoordinates.X;
+	R = InCoordinates.Z;
+	H = InCoordinates.H;
+	return *this;
+}
+
 FCubeCoordinates::FCubeCoordinates()
 :FCubeCoordinates( 0, 0, 0, 0 )
 {
@@ -40,24 +56,44 @@ FCubeCoordinates::FCubeCoordinates( const FAxialCoordinates& InCoordinates )
 {
 }
 
-FCubeCoordinates Cube_Add( const FCubeCoordinates& InA, const FCubeCoordinates& InB )
+FCubeCoordinates Cube_Direction( const int32 InDirection )
+{
+	return CubeDirections[ InDirection ];
+}
+
+FCubeCoordinates Cube_Neighbor( const FCubeCoordinates& InCubeCoordinate, const int32 InDirection )
+{
+	return InCubeCoordinate + Cube_Direction( InDirection );
+}
+
+FCubeCoordinates operator+( const FCubeCoordinates& InA, const FCubeCoordinates& InB )
 {
 	FCubeCoordinates ResultCube( InA.X + InB.X, InA.Y + InB.Y, InA.Z + InB.Z, InA.H + InB.H );
 	return ResultCube;
 }
 
-FCubeCoordinates Cube_Scale( const FCubeCoordinates& CubeVector, int32 InScale )
+FCubeCoordinates operator*( const FCubeCoordinates& CubeVector, const int32 InScale )
 {
 	FCubeCoordinates ResultCube( CubeVector.X * InScale, CubeVector.Y * InScale, CubeVector.Z * InScale, CubeVector.H * InScale );
 	return ResultCube;
 }
 
-FCubeCoordinates Cube_Direction( int32 InDirection )
+void ToVector( FVector2D& OutVector, const FAxialCoordinates& InCoordinates, const float InSize )
 {
-	return CubeDirections[ InDirection ];
+    OutVector.X = ( FMath::Sqrt( 3.0 ) * InCoordinates.Q + FMath::Sqrt( 3.0 ) / 2 * InCoordinates.R ) * InSize;
+    OutVector.Y = 3.0 / 2.0 * InCoordinates.R * InSize;
 }
 
-FCubeCoordinates Cube_Neighbor( const FCubeCoordinates& InCubeCoordinate, int32 InDirection )
+FVector2D ToVector( const FCubeCoordinates& InCoordinates, const float InSize )
 {
-	return Cube_Add( InCubeCoordinate, Cube_Direction( InDirection ) );
+	FVector2D Vector;
+    Vector.X = ( FMath::Sqrt( 3.0 ) * InCoordinates.X + FMath::Sqrt( 3.0 ) / 2 * InCoordinates.Z ) * InSize;
+    Vector.Y = 3.0 / 2.0 * InCoordinates.Z * InSize;
+	return Vector;
+}
+
+void ToVector( FVector2D& OutVector, const FCubeCoordinates& InCoordinates, const float InSize )
+{
+    OutVector.X = ( FMath::Sqrt( 3.0 ) * InCoordinates.X + FMath::Sqrt( 3.0 ) / 2 * InCoordinates.Z ) * InSize;
+    OutVector.Y = 3.0 / 2.0 * InCoordinates.Z * InSize;
 }

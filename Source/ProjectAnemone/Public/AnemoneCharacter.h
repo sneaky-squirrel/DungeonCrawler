@@ -30,6 +30,9 @@ public:
 	UAnemoneCharacter();
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite )
+	UTexture2D* Portrait;
+
+	UPROPERTY( EditAnywhere, BlueprintReadWrite )
 	TMap< EAnemoneScore, int32 > ScoreSheet;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite, Instanced )
@@ -41,7 +44,11 @@ public:
 	UFUNCTION( BlueprintCallable )
 	static FName CreateCharacter( const FName InIdentifier, TSubclassOf< UAnemoneCharacter > InArchetype );
 
+	virtual bool IsPlayerEntity_Implementation() const override;
+
 	virtual FString GetName_Implementation() const override;
+
+	virtual UTexture2D* GetTexture_Implementation() const;
 
 	virtual int32 GetScore_Implementation( const EAnemoneScore& InScore ) const override;
 
@@ -55,8 +62,12 @@ public:
 	UAnemoneGroup* CurrentGroup;
 
 protected:
+	//	Does the Character belong to the Player.
+	UPROPERTY( EditAnywhere )
+	bool bIsPlayerEntity;
+
 	//	Character Name
-	UPROPERTY( EditAnywhere)
+	UPROPERTY( EditAnywhere )
 	FName Name;
 
 	//	Decides the Order in which Entities will Act in a Round.  Lowest number is highest priority.

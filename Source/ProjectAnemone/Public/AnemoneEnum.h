@@ -94,6 +94,7 @@ using ERank = EAnemoneScoreRank;
 * in the enumerator.
 */
 
+/*
 UENUM( BlueprintType )
 enum class EAnemoneComponentPriority: uint8
 {
@@ -103,20 +104,11 @@ enum class EAnemoneComponentPriority: uint8
     // This component is meant to silently omit messages before they reach "Fire Event" components.
     MessageFilter   UMETA( DisplayName = "MESSAGE FILTER" ),
 
-    /*
-    *  This component is meant to change the message to reflect the entity receiving the message.
-    *  Modifier components are meant to handle message before "Fire Event" components.
-    *  e.g. Entity receives increased / unchanged / reduced fire damage.
-    *  e.g. Entity changes fire damage received to health restored instead.
-    */
     MessageModifier UMETA( DisplayName = "MESSAGE MODIFIER" ),
 
-    /*
-    *  This component is meant to fire an additional event if a particular message is received.
-    *  e.g. Entity counterattacks if it receives more than 10 fire damage from an enemy.
-    */
     FireEvent       UMETA( DisplayName = "FIRE EVENT" )
 };
+*/
 
 UENUM( BlueprintType )
  enum class EAnemoneDirection : uint8
@@ -124,5 +116,23 @@ UENUM( BlueprintType )
     Left        UMETA( DisplayName = "LEFT" ),
     Right       UMETA( DisplayName = "RIGHT" ),
     Up          UMETA( DisplayName = "UP" ),
-    Down        UMETA( DisplayName = "DOWN" )
+    Down        UMETA( DisplayName = "DOWN" ),
+
+    Next        UMETA( DisplayName = "NEXT" ),
+    Previous    UMETA( DisplayName = "PREVIOUS" ),
+
+    Southwest   UMETA( DisplayName = "SOUTH_WEST" ),
+    Southeast   UMETA( DisplayName = "SOUTH_EAST" ),
+    East        UMETA( DisplayName = "EAST" ),
+    Northeast   UMETA( DisplayName = "NORTH_EAST" ),
+    Northwest   UMETA( DisplayName = "NORTH_WEST" ),
+    West        UMETA( DisplayName = "WEST" )
+ };
+
+UENUM( BlueprintType )
+ enum class EAnemoneWidgetItemState : uint8
+ {
+    Focused     UMETA( DisplayName = "HAS_FOCUS" ),
+    Pressed     UMETA( DisplayName = "CURRENTLY_PRESSED" ),
+    NotFocused  UMETA( DisplayName = "NO_FOCUS" )
  };

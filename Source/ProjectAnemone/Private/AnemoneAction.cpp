@@ -10,7 +10,7 @@ using GameStateSubsystem = UAnemoneGameStateSubsystem;
 
 Action* Action::CreateAction( FName InHostID, TSubclassOf< Action > InActionType )
 {
-	Action* Item = NewObject< Action >( GameState, *InActionType );
+	Action* Item = NewObject< Action >( GlobalState, *InActionType );
 	Item->HostID = InHostID;
 	return Item;
 }
@@ -83,7 +83,7 @@ EOutcome Action::RollOutcome( const NameList& InInstigator, const NameList& InDe
 		UE_LOG( LogEncounter, Warning, TEXT( "Ratio #%d = %d." ), ++debugCount, Item.Value );
 	}
 */
-	UObject* Entity = GameState->GetEntity( HostID );
+	UObject* Entity = GlobalState->GetEntity( HostID );
 	if( !Entity || !Entity->Implements< UEntity >() )
 	{
 		UE_LOG( LogEncounter, Error, TEXT( "Action::RollOutcome()	:	Host == nullptr" ) );
@@ -105,7 +105,7 @@ void Action::DispatchEvent( EntityEvent* const InEvent, const NameList& InEntity
 {
 	for( FName Item : InEntity )
 	{
-		UObject* Entity = GameState->GetEntity( Item );
+		UObject* Entity = GlobalState->GetEntity( Item );
 		if( !Entity || !Entity->Implements< UEntity >() )
 		{
 			UE_LOG( LogEncounter, Warning, TEXT("Action::DispatchEvent()	:	Object == nullptr || Not_Entity") );
@@ -245,7 +245,7 @@ void UAnemoneAction::GetScoreList( const NameList& InEntity, const EScore& InSco
 	UObject* Entity;
 	for( FName Item : InEntity )
 	{
-		Entity = GameState->GetEntity( Item );
+		Entity = GlobalState->GetEntity( Item );
 		if( !Entity->Implements< UEntity >() )
 		{
 			continue;

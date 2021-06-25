@@ -74,11 +74,11 @@ FEntityScorePercentage::FEntityScorePercentage( FName InHost, EAnemoneScore InSc
 
 UObject* EntityEvent::GetInstigator() const
 {
-	if( InstigatorList.Num() <= 0 || !GameState || !GameState->ContainsEntity( InstigatorList[ 0 ] ) )
+	if( InstigatorList.Num() <= 0 || !GlobalState || !GlobalState->ContainsEntity( InstigatorList[ 0 ] ) )
 	{
 		return nullptr;
 	}
-	return GameState->GetEntity( InstigatorList[ 0 ] );
+	return GlobalState->GetEntity( InstigatorList[ 0 ] );
 }
 
 FString EntityEvent::GetInstigatorName() const
@@ -91,7 +91,7 @@ FString EntityEvent::GetInstigatorName() const
 		return FString( TEXT( "Error: Empty List." ) );
 	}
 	InstigatorID = InstigatorList[ 0 ];
-	Entity = GameState->GetEntity( InstigatorID );
+	Entity = GlobalState->GetEntity( InstigatorID );
 	if( !Entity || !Entity->Implements< UEntity >() )
 	{
 		UE_LOG( LogTemp, Error, TEXT( "EntityEvent::GetInstigatorName()" ) );
@@ -102,7 +102,7 @@ FString EntityEvent::GetInstigatorName() const
 
 FString EntityEvent::GetTargetName() const
 {
-	UObject* Entity = GameState->GetEntity( Target );
+	UObject* Entity = GlobalState->GetEntity( Target );
 	if( !Entity || !Entity->Implements< UEntity >() )
 	{
 		UE_LOG( LogTemp, Error, TEXT( "EntityEvent::GetTargetName()" ) );
@@ -113,7 +113,7 @@ FString EntityEvent::GetTargetName() const
 
 EntityEvent* EntityEvent::InitCopy( const Action* const InAction, const EventData& InData, LogQueue* const InTextLog ) const
 {
-	EntityEvent* Event = NewObject< EntityEvent >( GameState, GetClass() );
+	EntityEvent* Event = NewObject< EntityEvent >( GlobalState, GetClass() );
 	if( InAction )
 	{
 		Event->HostID = InAction->HostID;
@@ -151,11 +151,11 @@ void DeltaEvent::AddMultiplierMod( const float& InMultiplierMod )
 int32 DeltaEvent::GetDelta() const
 {
 	//GameStateSubsystem* State = GameStateSubsystem::GetSystem();
-	UObject* CurrentEntity = GameState->GetEntity( Target );
+	UObject* CurrentEntity = GlobalState->GetEntity( Target );
 	int32 Counter = Base + AddFlatConstant;
 	for( FEntityScorePercentage Item : AddFlatScore )
 	{
-		CurrentEntity = GameState->GetEntity( Item.Host );
+		CurrentEntity = GlobalState->GetEntity( Item.Host );
 		if( !CurrentEntity || !CurrentEntity->Implements< UEntity >() )
 		{
 			continue;
@@ -167,7 +167,7 @@ int32 DeltaEvent::GetDelta() const
 
 void DeltaEvent::ApplyDelta( int32 InAmount )
 {
-	UObject* Entity = GameState->GetEntity( Target );
+	UObject* Entity = GlobalState->GetEntity( Target );
 	if( Entity == nullptr || !Entity->Implements< UEntity >() )
 	{
 		UE_LOG( LogEncounter, Error, TEXT( "DeltaEvent::ApplyDelta()	:	Target == nullptr OR Target is NOT Entity" ) );

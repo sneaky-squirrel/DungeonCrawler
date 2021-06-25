@@ -25,7 +25,7 @@ Character::UAnemoneCharacter()
 
 FName Character::CreateCharacter( const FName InCharacterID, TSubclassOf< Character > InArchetype )
 {
-	Character* Item = NewObject< Character >( GameState, InArchetype );
+	Character* Item = NewObject< Character >( GlobalState, InArchetype );
 	Item->Tracker = NewObject< OutcomeTracker >( Item, OutcomeTracker::StaticClass() );
 	for( Module* m : Item->ModuleList )
 	{
@@ -35,12 +35,22 @@ FName Character::CreateCharacter( const FName InCharacterID, TSubclassOf< Charac
 	{
 		Item->Name = InCharacterID;
 	}
-	return ( GameState ) ? GameState->AddEntity( Item->Name, Item ) : NAME_None;
+	return ( GlobalState ) ? GlobalState->AddEntity( Item->Name, Item ) : NAME_None;
+}
+
+bool Character::IsPlayerEntity_Implementation() const
+{
+	return bIsPlayerEntity;
 }
 
 FString Character::GetName_Implementation() const
 {
 	return Name.ToString();
+}
+
+UTexture2D* Character::GetTexture_Implementation() const
+{
+	return Portrait;
 }
 
 void Character::HandleEvent_Implementation( EntityEvent* InEvent )

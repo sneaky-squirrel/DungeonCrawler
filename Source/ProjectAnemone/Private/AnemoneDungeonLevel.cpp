@@ -37,13 +37,10 @@ bool AAnemoneDungeonLevel::AddTileToGrid( AAnemoneHexTile* InTile )
         {
             return false;
         }
-        NewCoordinates.Q = SpiralSearchCoordinates.X;
-        NewCoordinates.R = SpiralSearchCoordinates.Z;
+        NewCoordinates = SpiralSearchCoordinates;
     }
     UE_LOG( LogTemp, Warning, TEXT( "New Coordinates = Q: %d | R: %d | H: %d" ), NewCoordinates.Q, NewCoordinates.R, NewCoordinates.H );
-    InTile->Coordinates.Q = NewCoordinates.Q;
-    InTile->Coordinates.R = NewCoordinates.R;
-    InTile->Coordinates.H = NewCoordinates.H;
+    InTile->Coordinates = NewCoordinates;
     InTile->bExistsInLevel = true;
     AddTileToMap( InTile );
     SnapTileToPosition( InTile );
@@ -56,7 +53,6 @@ void AAnemoneDungeonLevel::RemoveTileFromGrid( AAnemoneHexTile* InTile )
     RemoveTileFromMap( InTile->Coordinates );
 }
 
-// Changes the Position of the Player inside the Dungeon Grid depending on the Direction the Player is Facing.
 AAnemoneHexTile* AAnemoneDungeonLevel::MovePlayer( bool bMoveForward )
 {
     FCubeCoordinates P = CurrentPlayerPosition.Coordinates;
@@ -130,7 +126,6 @@ AAnemoneHexTile* AAnemoneDungeonLevel::MovePlayer( bool bMoveForward )
     return nullptr;
 }
 
-//  Change the Direction the Player is Facing inside the Dungeon Grid.
 void AAnemoneDungeonLevel::RotatePlayer( bool bRotateClockwise )
 {
     switch ( CurrentPlayerPosition.FacingAngle )
@@ -200,8 +195,6 @@ void AAnemoneDungeonLevel::RotatePlayer( bool bRotateClockwise )
     }
 }
 
-//  Activate Interaction of Tile the Player is facing.
-//  e.g.  Opening a Door, Inspecting the environment, Activating a Switch, etc.
 void AAnemoneDungeonLevel::PlayerInteract()
 {
     switch ( CurrentPlayerPosition.FacingAngle )
@@ -258,19 +251,12 @@ bool AAnemoneDungeonLevel::AreCoordinatesEmpty( const FCubeCoordinates& InCube )
     return false;
 }
 
-//  Snaps the Actor's transform in the 3D viewport according to its hexagonal coordinate.
 void AAnemoneDungeonLevel::SnapTileToPosition( AAnemoneHexTile* InTile )
 {
     int32 Q, R, H, AbsQ, AbsR, AbsH;
     FVector Location;
     FString NewName;
-
-    Q = InTile->Coordinates.Q;
-    R = InTile->Coordinates.R;
-    H = InTile->Coordinates.H;
-    AbsQ = FMath::Abs< int32 >( Q );
-    AbsR = FMath::Abs< int32 >( R );
-    AbsH = FMath::Abs< int32 >( H );
+    InTile->ExtractCoordinates( Q, R, H, AbsQ, AbsR, AbsH );
     NewName.Appendf( TEXT("Cell_%s%d%d%d_%s%d%d%d_%s%d%d%d"),
                     ( Q < 0 ) ? TEXT("-") : TEXT("+"), AbsQ / 100, AbsQ % 100 / 10, AbsQ % 10,
                     ( R < 0 ) ? TEXT("-") : TEXT("+"), AbsR / 100, AbsR % 100 / 10, AbsR % 10,
@@ -285,8 +271,6 @@ void AAnemoneDungeonLevel::SnapTileToPosition( AAnemoneHexTile* InTile )
 #endif
 }
 
-//  Fetch an unoccupied tile coordinate in an area defined by a pivot and radius, starting from the pivot.
-//  Returns: True if a coordinate exists, otherwise false.
 bool AAnemoneDungeonLevel::FindValidTileInSpiral( FCubeCoordinates InCenterCube, FCubeCoordinates& OutCube )
 {
     for( int32 Radius = 1; Radius < 99; Radius++ )
@@ -299,11 +283,9 @@ bool AAnemoneDungeonLevel::FindValidTileInSpiral( FCubeCoordinates InCenterCube,
     return false;
 }
 
-//  Fetch an unoccupied tile coordinate in ring defined by a pivot and radius.
-//  Returns: True if a coordinate exists, otherwise false.
 bool AAnemoneDungeonLevel::FindValidTileInRing( FCubeCoordinates InCenterCube, int32 InRadius, FCubeCoordinates& OutCube )
 {
-    FCubeCoordinates Navigator = Cube_Add( InCenterCube, Cube_Scale( Cube_Direction( 4 ), InRadius ) );
+    FCubeCoordinates Navigator = InCenterCube + ( Cube_Direction( 4 ) * InRadius );
     for( int32 i = 0; i < 6; ++i )
     {
         for( int32 j = 0; j < InRadius; ++j )
@@ -319,7 +301,6 @@ bool AAnemoneDungeonLevel::FindValidTileInRing( FCubeCoordinates InCenterCube, i
     return false;
 }
 
-//  Add tile to 3D list.
 void AAnemoneDungeonLevel::AddTileToMap( AAnemoneHexTile* InTile )
 {
     int32 Q = InTile->Coordinates.Q;
@@ -339,7 +320,6 @@ void AAnemoneDungeonLevel::AddTileToMap( AAnemoneHexTile* InTile )
     }
 }
 
-//  Remove Tile from 3D list, and remove corresponding Row and Height if they become empty.
 void AAnemoneDungeonLevel::RemoveTileFromMap( const FAxialCoordinates& InCoordinates )
 {
    UE_LOG( LogTemp, Warning, TEXT( "RemoveFromMap" ) );
@@ -383,10 +363,9 @@ bool AAnemoneDungeonLevel::DoesRowContainTiles( int32 InHeightIndex, int32 InRow
     return false;
 }
 
-// Changes the Position of the Player inside the Grid with a fixed vector if the Destination is Valid.
 AAnemoneHexTile* AAnemoneDungeonLevel::MovePlayerTowardsDirection( const FCubeCoordinates& InCubeVectorDirection )
 {
-    FCubeCoordinates NewPosition = Cube_Add( CurrentPlayerPosition.Coordinates, InCubeVectorDirection );
+    FCubeCoordinates NewPosition = CurrentPlayerPosition.Coordinates + InCubeVectorDirection;
     AAnemoneHexTile* FetchedTile = FetchTileAtAdjacentHeights( NewPosition );
     UE_LOG( LogTemp, Warning, TEXT( "Destination: X: %d, Y: %d, Z: %d" ),
             NewPosition.X,
@@ -402,7 +381,7 @@ AAnemoneHexTile* AAnemoneDungeonLevel::MovePlayerTowardsDirection( const FCubeCo
 
 void AAnemoneDungeonLevel::ActivateTileTowardsDirection( const FCubeCoordinates& InCubeVectorDirection )
 {
-    FCubeCoordinates NewPosition = Cube_Add( CurrentPlayerPosition.Coordinates, InCubeVectorDirection );
+    FCubeCoordinates NewPosition = CurrentPlayerPosition.Coordinates + InCubeVectorDirection;
     AAnemoneHexTile* FetchedTile = FetchTileAtAdjacentHeights( NewPosition );
     UE_LOG( LogTemp, Warning, TEXT( "Interact With: X: %d, Y: %d, Z: %d" ),
             NewPosition.X,
@@ -414,14 +393,12 @@ void AAnemoneDungeonLevel::ActivateTileTowardsDirection( const FCubeCoordinates&
     }
 }
 
-
-// Attempt to return target tile, or tile directly below or above it, in that order.  It is assumed that only one of these three tiles exists.
 AAnemoneHexTile* AAnemoneDungeonLevel::FetchTileAtAdjacentHeights( const FCubeCoordinates& InCubeVectorCoordinate )
 {
     FCubeCoordinates Below, Same, Above;
-    Below = Cube_Add( InCubeVectorCoordinate, FCubeCoordinates( 0, 0, 0, -1 ) );
+    Below = InCubeVectorCoordinate + FCubeCoordinates( 0, 0, 0, -1 );
     Same = InCubeVectorCoordinate;
-    Above = Cube_Add( InCubeVectorCoordinate, FCubeCoordinates( 0, 0, 0, 1 ) );
+    Above = InCubeVectorCoordinate + FCubeCoordinates( 0, 0, 0, 1 );
     if( !AreCoordinatesEmpty( Below ) )
     {
         return Grid[ Below.H ].Height[ Below.Z ].Row[ Below.X ];

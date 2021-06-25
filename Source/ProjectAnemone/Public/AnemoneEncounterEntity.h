@@ -29,7 +29,13 @@ class PROJECTANEMONE_API IAnemoneEncounterEntity
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable )
+	bool IsPlayerEntity() const;
+
+	UFUNCTION( BlueprintNativeEvent, BlueprintCallable )
 	FString GetName() const;
+
+	UFUNCTION( BlueprintNativeEvent, BlueprintCallable )
+	UTexture2D* GetTexture() const;
 
 	UFUNCTION( BlueprintNativeEvent, BlueprintCallable )
 	int32 GetScore( const EAnemoneScore& InScore ) const;

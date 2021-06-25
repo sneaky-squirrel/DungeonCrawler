@@ -1,6 +1,8 @@
 #pragma once
 #include "CoreMinimal.h"
+
 #include "AnemoneEnum.h"
+#include "HexagonMath.h"
 
 #include "Containers/Map.h"
 #include "Containers/Queue.h"
@@ -40,8 +42,12 @@ struct FAnemoneScore
 };
 using Score = FAnemoneScore;
 
-	FArchive& operator<<( FArchive& Ar, FAnemoneScore& Score );
-	FArchive& operator<<( FArchive& Ar, TMap< FName, FAnemoneScore >& ScoreSheet );
+FArchive& operator<<( FArchive& Ar, FAnemoneScore& Score );
+FArchive& operator<<( FArchive& Ar, TMap< FName, FAnemoneScore >& ScoreSheet );
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////	Entity Score Data
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //	Defines the Score that the Instigators and Defenders use to compare against each other.		e.g. Strength vs Block.
 struct FAnemoneScorePair
@@ -86,7 +92,6 @@ using ScoreCheck = FAnemoneScoreCheck;
 /////////////	Event Structures
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//USTRUCT( BlueprintType )
 USTRUCT()
 struct FAnemoneEventData
 {

@@ -3,8 +3,10 @@
 
 #include "AnemoneGameStateSubsystem.generated.h"
 
+DECLARE_LOG_CATEGORY_EXTERN( LogGameStateSubsystem, Log, All );
+
 extern TMap< FName, UObject* > ObjectMap;
-extern UAnemoneGameStateSubsystem* GameState;
+extern UAnemoneGameStateSubsystem* GlobalState;
 
 UObject* SerializeReference( FArchive& Ar, TWeakObjectPtr<UObject> ObjectReference );
 void SerializeArray( FArchive& Ar, TArray<UObject*>& ObjectList );
@@ -40,19 +42,22 @@ public:
 	UFUNCTION( BlueprintCallable, Category="SaveGame")
 	bool LoadGameStateFromSlot( const FString& SlotName, const int32 UserIndex );
 
-	//	Fetches the GameState subsystem.
-	//static UAnemoneGameStateSubsystem* GetSystem();
-
-	void RemoteLog( FString String );
-
 private:
 	//	Global Entity Collection.
 	UPROPERTY()
 	TMap< FName, UObject* > EntityMap;
 
+	void foo();
+
 	bool SaveDataToDisk( TArray<uint8>& StoredData, const FString& SlotName, const int32 UserIndex );
 	bool LoadDataFromDisk( TArray<uint8>& StoredData, const FString& SlotName, const int32 UserIndex );
 
-	//static UAnemoneGameStateSubsystem* GameState;
+	//APlayerController* GetController() const;
+
+	template< class T >
+	T* GetGameMode() const;
+
+	UWorld* GetWorld() const;
 };
+using GameStateSubsystem = UAnemoneGameStateSubsystem;
 

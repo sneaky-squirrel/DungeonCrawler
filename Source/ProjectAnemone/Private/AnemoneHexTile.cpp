@@ -3,8 +3,9 @@
 
 void AAnemoneHexTile::OnConstruction( const FTransform& Transform )
 {
+    Super::OnConstruction( Transform );
     AAnemoneDungeonLevel* DungeonLevel = FetchDungeonLevel();
-    if( DungeonLevel != nullptr )
+    if( DungeonLevel )
     {
         DungeonLevel->AddTileToGrid( this );
     }
@@ -12,12 +13,22 @@ void AAnemoneHexTile::OnConstruction( const FTransform& Transform )
 
 void AAnemoneHexTile::Destroyed()
 {
-    Super::Destroyed();
     AAnemoneDungeonLevel* DungeonLevel = FetchDungeonLevel();
-    if( DungeonLevel != nullptr )
+    if( DungeonLevel )
     {
         DungeonLevel->RemoveTileFromGrid( this );
     }
+    Super::Destroyed();
+}
+
+void AAnemoneHexTile::ExtractCoordinates( int32& InQ, int32& InR, int32& InH, int32& InAbsQ, int32& InAbsR, int32& InAbsH ) const
+{
+    InQ = Coordinates.Q;
+    InR = Coordinates.R;
+    InH = Coordinates.H;
+    InAbsQ = FMath::Abs< int32 >( InQ );
+    InAbsR = FMath::Abs< int32 >( InR );
+    InAbsH = FMath::Abs< int32 >( InH );
 }
 
 #if WITH_EDITOR
